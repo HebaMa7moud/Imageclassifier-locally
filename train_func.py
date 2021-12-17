@@ -163,3 +163,30 @@ def save_checkpoint(Test_accuracy, model, architect, train_data, output_layer, h
                      'learningrate':learningrate,
                      'dropout':Dropout}
         torch.save(checkpoint, 'checkpoint.pth')
+               
+
+#define argparse arguments
+
+
+parser.add_argument('data_dir',  action='store', default='flowers')
+parser.add_argument('--gpu', action='store', default='cpu')
+parser.add_argument('--arch', action='store', default='vgg19')
+parser.add_argument('--hidden_layers',action='store' ,type = int, default=4000)
+parser.add_argument('--output_layer',action='store' ,type=int, default=102)
+parser.add_argument('--learning_rate',action='store', type=float, default=0.003)
+parser.add_argument('--dropout', action='store', type=float, default=0.2)
+parser.add_argument('--epochs', action='store', type=int, default=10)
+parser.add_argument('--save_dir',action='store', default='checkpoint_vgg19.pth')
+
+
+args = parser.parse_args()
+directory= args.data_dir
+device= args.gpu
+architect= args.arch
+hidden_layer = args.hidden_layers
+output_layer = args.output_layer
+learningrate = args.learning_rate
+Dropout= args.dropout
+epochs = args.epochs
+checkpoin_path = args.save_dir
+
