@@ -7,20 +7,45 @@ from collections import OrderedDict
 from torchvision import datasets, transforms, models
 import argparse
 
+def parse_arguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('data_dir',  action='store', default='flowers')
+    parser.add_argument('--power', action='store', default='cpu')
+    parser.add_argument('--arche', action='store', default='vgg19')
+    parser.add_argument('--hidden_layers',action='store' ,type = int, default=4000)
+    parser.add_argument('--output_layer',action='store' ,type=int, default=102)
+    parser.add_argument('--learning_rate',action='store', type=float, default=0.003)
+    parser.add_argument('--dropout', action='store', type=float, default=0.2)
+    parser.add_argument('--epochs', action='store', type=int, default=10)
+    parser.add_argument('--save_dir',action='store', default='checkpoint_vgg19.pth')
 
-parser = argparse.ArgumentParser()
-args = parser.parse_args()
+    args = parser.parse_args()
+    directory= args.data_dir
+    device= args.power
+    architect= args.arche
+    hidden_layer = args.hidden_layers
+    output_layer = args.output_layer
+    learningrate = args.learning_rate
+    Dropout= args.dropout
+    epochs = args.epochs
+    checkpoin_path = args.save_dir
+    return directory, device, architect, hidden_layer, output_layer, learningrate, Dropout, epochs, checkpoin_path
+
+
+
+#parser = argparse.ArgumentParser()
+#args = parser.parse_args()
 
 
 arch = {'vgg19':25088, 'densenet121':1024, 'vgg16':25088}
 
-def data_prep(data_dir='flowers'):
+def data_prep(directory):
 
     # data direction
-    data_dir = data_dir
-    train_dir = data_dir + '/train'
-    valid_dir = data_dir + '/valid'
-    test_dir = data_dir + '/test'
+    #data_dir = data_dir
+    train_dir = directory + '/train'
+    valid_dir = directory + '/valid'
+    test_dir = directory + '/test'
     #define transforms for datasets
     train_transforms = transforms.Compose([transforms.RandomRotation(30),
                                           transforms.RandomResizedCrop(224),
@@ -149,10 +174,10 @@ def test(model,testloader, device, criterion):
     return Test_accuracy
 
 
-def save_checkpoint(Test_accuracy, model, architect, train_data, output_layer, hidden_layer, optimizer, epochs, learningrate, Dropout):
+def save_checkpoint(Test_accuracy, model, architect, train_data, output_layer, hidden_layer, optimizer, epochs, learningrate, Dropout, checkpoin_path):
     if Test_accuracy >= 0.70:
         model.class_to_idx = train_data.class_to_idx
-        torch.save(model.state_dict(), 'checkpoint.pth')
+        torch.save(model.state_dict(), checkpoin_path)
         checkpoint= {'input_size':arch[architect],
                      'output_size':output_layer,
                      'hidden_layers':hidden_layer,
@@ -162,12 +187,13 @@ def save_checkpoint(Test_accuracy, model, architect, train_data, output_layer, h
                      'epochs':epochs,
                      'learningrate':learningrate,
                      'dropout':Dropout}
-        torch.save(checkpoint, 'checkpoint.pth')
-               
-
-#define argparse arguments
+        torch.save(checkpoint, checkpoin_path)
 
 
+"""
+#define argparse argumen
+
+parser = argparse.ArgumentParser()
 parser.add_argument('data_dir',  action='store', default='flowers')
 parser.add_argument('--gpu', action='store', default='cpu')
 parser.add_argument('--arch', action='store', default='vgg19')
@@ -177,7 +203,6 @@ parser.add_argument('--learning_rate',action='store', type=float, default=0.003)
 parser.add_argument('--dropout', action='store', type=float, default=0.2)
 parser.add_argument('--epochs', action='store', type=int, default=10)
 parser.add_argument('--save_dir',action='store', default='checkpoint_vgg19.pth')
-
 
 args = parser.parse_args()
 directory= args.data_dir
@@ -189,4 +214,4 @@ learningrate = args.learning_rate
 Dropout= args.dropout
 epochs = args.epochs
 checkpoin_path = args.save_dir
-
+"""
