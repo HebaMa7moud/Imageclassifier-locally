@@ -6,24 +6,36 @@ import numpy as np
 from torchvision import models
 from torch import nn, optim
 from collections import OrderedDict
-
-import time
-import random
 import argparse
 
 
-parser = argparse.ArgumentParser()
-args = parser.parse_args()
+def parse_arguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--path_dir',  action='store', default='checkpoint.pth')
+    parser.add_argument('--gpu', action='store', default='gpu')
+    parser.add_argument('--cat_nam', action ='store', default = 'cat_to_name.json')
+    parser.add_argument('--img_dir', action='store', default='flowers/test/1/image_06743.jpg')
+    parser.add_argument('--top_k', action='store', type= int, default= 5)
+
+    args = parser.parse_args()
+    checkpoint_path = args.path_dir
+    device= args.gpu
+    categ_nam = args.cat_nam
+    directory = args.img_dir
+    top_k = args.top_k
+
+    return checkpoint_path, device, categ_nam, directory, top_k
 
 
-def load_checkpoint(filepath):
-    checkpoint = torch.load(filepath, map_location=('cuda' if torch.cuda.is_available() and args.gpu else 'cpu'))
 
-    if filepath == 'checkpoint.pth':
+def load_checkpoint(checkpoint_path,device):
+    checkpoint = torch.load(checkpoint_path, map_location=('cuda' if torch.cuda.is_available() and device == "gpu" else 'cpu'))
+
+    if checkpoint_path == 'checkpoint.pth':
         model = models.vgg19(pretrained=True)
-    elif filepath == 'checkpoint_vgg16.pth':
+    elif checkpoint_path == 'checkpoint_vgg16.pth':
         model = models.vgg16(pretrained=True)
-    elif filepath == 'checkpoint_den121.pth':
+    elif checkpoint_path == 'checkpoint_den121.pth':
         model = models.densenet121(pretrained=True)
     else:
         print('Enter model checkpoint path')
@@ -52,9 +64,9 @@ def load_checkpoint(filepath):
 
 
 #processeding image
-def process_image(image_dir):
+def process_image(directory):
     from PIL import Image
-    with Image.open(image_dir) as image:
+    with Image.open(directory) as image:
 
         image = image.resize((256,256)).crop((0,0,224,224))
         np_image = np.array(image)/225
@@ -80,16 +92,16 @@ def imshow(image, ax=None, title=None):
         """
 
 # class prediction
-def predict(device , categ_nam , image_path, model, top_k=5):
+def predict(device , categ_nam , directory, model, top_k=5):
 
-    device = torch.device('cuda' if torch.cuda.is_available() and args.gpu else 'cpu')
+    device = torch.device('cuda' if torch.cuda.is_available() and device == "gpu" else 'cpu')
 
     model.to(device);
     print(device)
 
     with open(categ_nam, 'r') as f:
         cat_to_name = json.load(f)
-    torch_image = torch.from_numpy(np.expand_dims(process_image(image_path), axis=0)).type(torch.FloatTensor)
+    torch_image = torch.from_numpy(np.expand_dims(process_image(directory), axis=0)).type(torch.FloatTensor)
     outputs = model(torch_image)
     ps = torch.exp(outputs).data
     top_p, top_class = ps.topk(top_k)
@@ -103,14 +115,14 @@ def predict(device , categ_nam , image_path, model, top_k=5):
 
 
 
-def print_flow_prob(image_path, cat_to_name, top_probs, top_class, flowers_name):
+def print_flow_prob(directory, cat_to_name, top_probs, top_class, flowers_name):
 
     for kclass, prob in zip(top_class, top_probs):
         print('Class : {}.... Propability:{:0.3f}'.format(kclass, prob*100))
 
 
 
-    flow_num = image_path.split('/')[2]
+    flow_num = directory.split('/')[2]
     flower_title = cat_to_name[flow_num]
     flow_prob ={}
     for flower, prob in zip(flowers_name, top_probs):
@@ -122,3 +134,7 @@ def print_flow_prob(image_path, cat_to_name, top_probs, top_class, flowers_name)
         print('Tested flower label: {} ....probability:{:0.3f}'.format(flower_title, flow_prob[flower_title]*100))
     else:
         print('Tested flower {} is Not classified'.format(flower_title))
+        
+        
+        
+  #python predict1.py --path_dir 'checkpoint.pth' --cat_nam 'cat_to_name.json' --gpu gpu --img_dir 'flowers/test/1/image_06743.jpg' --top_k 5
