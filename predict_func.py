@@ -26,10 +26,10 @@ def parse_arguments():
 
     return checkpoint_path, device, categ_nam, directory, top_k
 
+#device = torch.device('cuda' if torch.cuda.is_available() and device == "gpu" else 'cpu')
 
-
-def load_checkpoint(checkpoint_path,device):
-    checkpoint = torch.load(checkpoint_path, map_location=('cuda' if torch.cuda.is_available() and device == "gpu" else 'cpu'))
+def load_checkpoint(checkpoint_path):
+    checkpoint = torch.load(filepath, map_location=('cuda' if torch.cuda.is_available() and device == "gpu" else 'cpu'))
 
     if checkpoint_path == 'checkpoint.pth':
         model = models.vgg19(pretrained=True)
@@ -122,7 +122,7 @@ def print_flow_prob(directory, cat_to_name, top_probs, top_class, flowers_name):
 
 
 
-    flow_num = directory.split('/')[2]
+    flow_num = image_path.split('/')[2]
     flower_title = cat_to_name[flow_num]
     flow_prob ={}
     for flower, prob in zip(flowers_name, top_probs):
@@ -134,7 +134,3 @@ def print_flow_prob(directory, cat_to_name, top_probs, top_class, flowers_name):
         print('Tested flower label: {} ....probability:{:0.3f}'.format(flower_title, flow_prob[flower_title]*100))
     else:
         print('Tested flower {} is Not classified'.format(flower_title))
-        
-        
-        
-  #python predict1.py --path_dir 'checkpoint.pth' --cat_nam 'cat_to_name.json' --gpu gpu --img_dir 'flowers/test/1/image_06743.jpg' --top_k 5

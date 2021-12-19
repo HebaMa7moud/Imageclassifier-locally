@@ -21,7 +21,7 @@ def parse_arguments():
 
     args = parser.parse_args()
     directory= args.data_dir
-    device= args.power
+    power= args.power
     architect= args.arche
     hidden_layer = args.hidden_layers
     output_layer = args.output_layer
@@ -29,7 +29,7 @@ def parse_arguments():
     Dropout= args.dropout
     epochs = args.epochs
     checkpoin_path = args.save_dir
-    return directory, device, architect, hidden_layer, output_layer, learningrate, Dropout, epochs, checkpoin_path
+    return  directory, power, architect, hidden_layer, output_layer, learningrate, Dropout, epochs, checkpoin_path
 
 
 
@@ -74,10 +74,14 @@ def data_prep(directory):
     return train_data, trainloader, validloader, testloader
 
 #define new classifier
-def pr_trained_model(architect , output_layer, hidden_layer, drop_o, learningrate , device):
-
-
-    device = torch.device('cuda' if torch.cuda.is_available() and args.gpu else 'cpu')
+def pr_trained_model(architect , output_layer, hidden_layer, drop_o, learningrate , power):
+    
+    device = torch.device('cuda' if torch.cuda.is_available() and device == "gpu" else 'cpu')
+    if torch.cuda.is_available():
+        if power == args.gpu:
+            device =  torch.device('cuda')
+    else:
+        device =  torch.device('cpu')
     #models_name = ['vgg11', 'vgg13','vgg16', 'vgg19', 'ResNet34','ResNet50', 'alexnet', 'densenet121', 'densenet169']
     if architect == 'vgg19':
         model = models.vgg19(pretrained=True)
@@ -192,7 +196,6 @@ def save_checkpoint(Test_accuracy, model, architect, train_data, output_layer, h
 
 """
 #define argparse argumen
-
 parser = argparse.ArgumentParser()
 parser.add_argument('data_dir',  action='store', default='flowers')
 parser.add_argument('--gpu', action='store', default='cpu')
@@ -203,7 +206,6 @@ parser.add_argument('--learning_rate',action='store', type=float, default=0.003)
 parser.add_argument('--dropout', action='store', type=float, default=0.2)
 parser.add_argument('--epochs', action='store', type=int, default=10)
 parser.add_argument('--save_dir',action='store', default='checkpoint_vgg19.pth')
-
 args = parser.parse_args()
 directory= args.data_dir
 device= args.gpu
